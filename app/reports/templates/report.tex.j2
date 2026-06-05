@@ -1,0 +1,180 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    pdftitle={SentinelScan Security Assessment Report},
+    pdfauthor={SentinelScan},
+    pdfsubject={Cyber Security Assessment}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{SentinelScan Security Assessment Report}
+\rhead{SentinelScan v{{ system_version | latex_escape }}}
+\cfoot{Page \thepage\ of \pageref{LastPage}}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.8em}
+
+\newcommand{\sevcritical}{\textbf{\textcolor{red!75!black}{Critical}}}
+\newcommand{\sevhigh}{\textbf{\textcolor{red!60!black}{High}}}
+\newcommand{\sevmedium}{\textbf{\textcolor{orange!85!black}{Medium}}}
+\newcommand{\sevlow}{\textbf{\textcolor{blue!65!black}{Low}}}
+
+\begin{document}
+
+\begin{center}
+    {\LARGE \textbf{SentinelScan Security Assessment Report}}\\[0.4em]
+    {\large Defensive Web Security Review}\\[1em]
+    {\normalsize System Version: \textbf{SentinelScan v{{ system_version | latex_escape }}}}\\
+    {\normalsize Assessment Date: \textbf{ {{ created_at | latex_escape }} }}\\
+    {\normalsize Target: \textbf{ {{ target | latex_escape }} }}\\
+    {\normalsize Scan ID: \textbf{ {{ scan_id | latex_escape }} }}
+\end{center}
+
+\vspace{0.5em}
+\hrule
+\vspace{1em}
+
+\section*{Executive Summary}
+
+SentinelScan identified a \textbf{ {{ risk.rating | latex_escape }} } overall risk posture for the assessed target. The scan recorded \textbf{ {{ risk.total_findings | latex_escape }} } findings across header security, transport security, form handling, and information disclosure. The most significant issues are the absence of essential browser security headers, a login form that submits over HTTP, and the lack of HTTPS on the target application.
+
+For non-technical stakeholders, the practical concern is straightforward: sensitive information may be exposed in transit, the application is easier to fingerprint, and the site is not applying basic protections that modern web applications are expected to have. These weaknesses increase the likelihood of credential interception, session compromise, and user trust impact.
+
+The most urgent corrective action is to enforce HTTPS for the application and all authentication flows, followed by deployment of core security headers such as Content-Security-Policy and Strict-Transport-Security.
+
+\section*{Scope and Methodology}
+
+This assessment was performed using passive analysis techniques only. The scan reviewed:
+
+\begin{itemize}[leftmargin=1.5em]
+    \item HTTP response headers
+    \item Page crawling and form discovery
+    \item Form security analysis
+    \item SSL/TLS availability checks
+    \item Technology fingerprinting and version exposure review
+\end{itemize}
+
+No exploitation, payload delivery, or intrusive testing was performed. The report is based on the provided scan output and the observed application behavior.
+
+\section*{System Overview}
+
+\textbf{System Name:} {{ system_name | latex_escape }}\\
+\textbf{System Version:} v{{ system_version | latex_escape }}\\
+\textbf{Purpose:} Defensive web vulnerability scanning and structured reporting\\
+\textbf{Assessment Target:} Internal web application at {{ target | latex_escape }}\\
+
+\textbf{Observed Technologies:}
+\begin{itemize}[leftmargin=1.5em]
+    {% if scan.technology is defined and scan.technology.detected is defined %}
+    {% for item in scan.technology.detected %}
+    \item {{ item.name | latex_escape }}: {{ item.value | latex_escape }}
+    {% endfor %}
+    {% endif %}
+    {% if scan.crawl is defined and scan.crawl.forms is defined and scan.crawl.forms|length > 0 %}
+    {% for item in scan.crawl.forms[:1] %}
+    \item Login endpoint at \texttt{ {{ item.action | latex_escape }} }
+    {% endfor %}
+    {% endif %}
+\end{itemize}
+
+\section*{Risk Overview}
+
+\begin{tabularx}{\textwidth}{@{}l c X@{}}
+\toprule
+\textbf{Metric} & \textbf{Value} & \textbf{Interpretation} \\
+\midrule
+Total Findings & {{ risk.total_findings | latex_escape }} & Multiple layered weaknesses across transport, headers, and metadata exposure \\
+Risk Score & {{ risk.risk_score | latex_escape }} & Elevated composite score produced by the scanner \\
+Overall Rating & {{ risk.rating | latex_escape }} & Immediate remediation recommended \\
+Critical Findings & {{ severity_counts.critical | latex_escape }} & Insecure password handling over HTTP \\
+High Findings & {{ severity_counts.high | latex_escape }} & Missing core security controls and insecure transport usage \\
+Medium Findings & {{ severity_counts.medium | latex_escape }} & Browser hardening gaps \\
+Low Findings & {{ severity_counts.low | latex_escape }} & Information disclosure and hardening issues \\
+\bottomrule
+\end{tabularx}
+
+\section*{Findings Summary}
+
+\begin{longtable}{@{}p{0.32\textwidth} p{0.13\textwidth} p{0.47\textwidth}@{}}
+\toprule
+\textbf{Finding} & \textbf{Severity} & \textbf{Evidence} \\
+\midrule
+{% if findings|length > 0 %}
+{% for finding in findings %}
+{{ finding.name | latex_escape }} & {{ finding.severity | latex_escape }} & {{ finding.evidence | latex_escape }} \\
+{% endfor %}
+{% else %}
+No findings were recorded. & N/A & N/A \\
+{% endif %}
+\bottomrule
+\end{longtable}
+
+\section*{Detailed Findings}
+
+{% for finding in findings %}
+\subsection*{ {{ finding.name | latex_escape }} }
+
+	extbf{Severity: {{ finding.severity | latex_escape }}}\\
+\textit{Severity: {{ finding.severity | latex_escape }}}\\
+{{ finding.description | latex_escape }}
+
+\textbf{Evidence:} {{ finding.evidence | latex_escape }}\\
+\textbf{Recommendation:} {{ finding.recommendation | latex_escape }}
+
+{% endfor %}
+
+\section*{Business Impact Summary}
+
+For business stakeholders, the main risks are:
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Credential exposure during login due to unencrypted transport
+    \item Reduced user trust because the site lacks basic browser protections
+    \item Easier targeting by attackers through visible software fingerprints
+    \item Potential compliance concerns where HTTPS and header hardening are expected
+\end{itemize}
+
+The issues do not indicate a confirmed compromise, but they do indicate a weak security posture that should be corrected before the application is considered production-ready.
+
+\section*{Recommended Remediation Plan}
+
+\begin{enumerate}[leftmargin=1.8em]
+    \item \textbf{Immediately enforce HTTPS} for the entire application, including the login form and all sensitive endpoints.
+    \item \textbf{Deploy core browser security headers}:
+    \begin{itemize}[leftmargin=1.5em]
+        \item Content-Security-Policy
+        \item Strict-Transport-Security
+        \item X-Frame-Options or frame-ancestors
+        \item X-Content-Type-Options
+    \end{itemize}
+    \item \textbf{Reduce information disclosure} by hiding or normalizing Server and X-Powered-By headers.
+    \item \textbf{Add privacy hardening headers} such as Referrer-Policy and Permissions-Policy.
+    \item \textbf{Re-test the application} after changes to confirm transport security and header coverage.
+\end{enumerate}
+
+\section*{Conclusion}
+
+The assessed system currently presents a \textbf{Critical} security posture due to insecure authentication handling and missing baseline web protections. The most important fix is to eliminate HTTP usage for the application and its login flow. Once transport security is corrected, the next priority is to deploy browser hardening headers and reduce fingerprinting exposure.
+
+\textbf{Final assessment:} The application should be remediated before further use in environments that handle sensitive data or user credentials.
+
+\end{document}

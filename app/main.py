@@ -1,8 +1,9 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import Response
 from pydantic import BaseModel, HttpUrl
 
 from app.database.db import fetch_scan_by_id, init_db, save_scan
-from app.reports.generator import generate_html_report, generate_pdf_report
+from app.reports.generator import generate_html_report, generate_pdf_report, generate_tex_report
 from app.scanner.crawler import crawl_target
 from app.scanner.forms import analyze_forms
 from app.scanner.headers import scan_security_headers
@@ -86,6 +87,19 @@ def get_report_html(scan_id: int) -> dict:
     if scan is None:
         raise HTTPException(status_code=404, detail="Scan not found")
     return {"scan_id": scan_id, "html": generate_html_report(scan)}
+
+
+@app.get("/report/{scan_id}/tex")
+def get_report_tex(scan_id: int):
+    scan = fetch_scan_by_id(scan_id)
+    if scan is None:
+        raise HTTPException(status_code=404, detail="Scan not found")
+    tex = generate_tex_report(scan)
+    return Response(
+        content=tex,
+        media_type="application/x-tex",
+        headers={"Content-Disposition": f'attachment; filename="sentinelscan-{scan_id}.tex"'},
+    )
 
 
 @app.get("/report/{scan_id}/pdf")

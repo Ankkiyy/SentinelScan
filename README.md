@@ -9,6 +9,7 @@ SentinelScan is a defensive web vulnerability scanner designed to help security 
 - SQLite by default, with PostgreSQL-ready configuration support
 - Jinja2 report templates
 - WeasyPrint PDF export
+- LaTeX (.tex) report export
 - React dashboard planned later
 
 ## Build Order
@@ -51,5 +52,6 @@ curl -X POST http://127.0.0.1:8000/scan \
 - `POST /scan` - runs passive checks against a target URL
 - `GET /scan/{scan_id}` - retrieves a stored scan result
 - `GET /report/{scan_id}` - returns the HTML report for a scan
+- `GET /report/{scan_id}/tex` - downloads the report as a LaTeX `.tex` file
 - `GET /report/{scan_id}/pdf` - returns a PDF report for a scan
 - `GET /health` - health check
