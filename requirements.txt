@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+requests
+beautifulsoup4
+pydantic
+python-multipart
+jinja2
+weasyprint
+cryptography

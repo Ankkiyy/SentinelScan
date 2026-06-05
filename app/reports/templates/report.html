@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SentinelScan Report</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #0b1220;
+            --panel: #101a30;
+            --panel-soft: #15213b;
+            --text: #e7eefc;
+            --muted: #9fb0cf;
+            --accent: #72d6ff;
+            --border: rgba(255, 255, 255, 0.1);
+            --low: #5ad7a8;
+            --medium: #ffd166;
+            --high: #ff9f43;
+            --critical: #ff6b6b;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: linear-gradient(180deg, #08101d 0%, #0e1728 100%);
+            color: var(--text);
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 24px 56px;
+        }
+
+        .hero {
+            background: radial-gradient(circle at top right, rgba(114, 214, 255, 0.14), transparent 30%), var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+        }
+
+        h1, h2, h3, p {
+            margin-top: 0;
+        }
+
+        h1 {
+            margin-bottom: 8px;
+            font-size: 34px;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            margin-bottom: 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: var(--panel-soft);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px;
+        }
+
+        .metric {
+            font-size: 30px;
+            font-weight: 700;
+            margin: 8px 0 0;
+        }
+
+        .section {
+            margin-top: 24px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .low { background: rgba(90, 215, 168, 0.16); color: var(--low); }
+        .medium { background: rgba(255, 209, 102, 0.16); color: var(--medium); }
+        .high { background: rgba(255, 159, 67, 0.16); color: var(--high); }
+        .critical { background: rgba(255, 107, 107, 0.16); color: var(--critical); }
+        .muted { color: var(--muted); }
+        .mono { font-family: Consolas, Monaco, monospace; }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <section class="hero">
+            <h1>SentinelScan Report</h1>
+            <p class="subtitle">Defensive web vulnerability assessment for <span class="mono">{{ scan.target }}</span></p>
+            <div class="grid">
+                <div class="card">
+                    <div class="muted">Risk Rating</div>
+                    <div class="metric">{{ scan.risk.rating }}</div>
+                </div>
+                <div class="card">
+                    <div class="muted">Risk Score</div>
+                    <div class="metric">{{ scan.risk.risk_score }}</div>
+                </div>
+                <div class="card">
+                    <div class="muted">Findings</div>
+                    <div class="metric">{{ scan.risk.total_findings }}</div>
+                </div>
+                <div class="card">
+                    <div class="muted">Scan ID</div>
+                    <div class="metric">{{ scan.scan_id }}</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Summary</h2>
+            <p class="muted">Created at {{ scan.created_at }}</p>
+            <p>Passive checks covered security headers, crawl discovery, form exposure, TLS metadata, and technology fingerprinting.</p>
+        </section>
+
+        <section class="section">
+            <h2>Findings</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Severity</th>
+                        <th>Name</th>
+                        <th>Evidence</th>
+                        <th>Recommendation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for finding in scan.findings %}
+                    <tr>
+                        <td><span class="badge {{ finding.severity|lower }}">{{ finding.severity }}</span></td>
+                        <td>
+                            <strong>{{ finding.name }}</strong><br>
+                            <span class="muted">{{ finding.description }}</span>
+                        </td>
+                        <td class="mono">{{ finding.evidence }}</td>
+                        <td>{{ finding.recommendation }}</td>
+                    </tr>
+                {% endfor %}
+                {% if scan.findings|length == 0 %}
+                    <tr>
+                        <td colspan="4">No findings were recorded.</td>
+                    </tr>
+                {% endif %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+</body>
+</html>
