@@ -93,4 +93,7 @@ def get_report_pdf(scan_id: int):
     scan = fetch_scan_by_id(scan_id)
     if scan is None:
         raise HTTPException(status_code=404, detail="Scan not found")
-    return generate_pdf_report(scan)
+    try:
+        return generate_pdf_report(scan)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc

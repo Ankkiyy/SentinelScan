@@ -25,6 +25,15 @@ SentinelScan is a defensive web vulnerability scanner designed to help security 
 ## Run
 
 ```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip3 install -r requirements.txt
+python3 run.py
+```
+
+```windows
+python -m venv venv
+venv\Scripts\activate
 pip install -r requirements.txt
 python run.py
 ```

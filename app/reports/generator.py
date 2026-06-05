@@ -5,7 +5,6 @@ from typing import Any
 
 from fastapi.responses import Response
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from weasyprint import HTML
 
 TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
 
@@ -23,6 +22,15 @@ def generate_html_report(scan: dict[str, Any]) -> str:
 
 
 def generate_pdf_report(scan: dict[str, Any]) -> Response:
+    try:
+        from weasyprint import HTML
+    except (ImportError, OSError) as exc:
+        raise RuntimeError(
+            "PDF report generation requires WeasyPrint and its system libraries. "
+            "Install the native dependencies described in the WeasyPrint documentation "
+            "or use the HTML report endpoint instead."
+        ) from exc
+
     html = generate_html_report(scan)
     pdf_bytes = HTML(string=html, base_url=str(TEMPLATE_DIR)).write_pdf()
     return Response(
